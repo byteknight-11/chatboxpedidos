@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Abyssinica+SIL&display=swap');
+
+:root{
+
+    --colortexto: #FFFFFF;
+    --colortextoresaltado: #20FF0C;
+    --fuente: "Abyssinica SIL", sans-serif;
+
+}
+
+.body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+#chatbox {
+    width: 500px;
+    background: white;
+    padding: 10px;
+    border-radius: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.body{
+
+    display: flex;
+    flex-direction: column;
+}
+
+.titulo{
+    font-family: var(--fuente);
+    font-size: 40px;
+    padding: 20px;
+    width: 100%;
+}
+
+#chat {
+
+    height: 400px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+
+}
+input {
+    width: 85%;
+    padding: 5px;
+}
+
+
+button {
+    width: 18%;
+    margin-top: 30px;
+    padding: 5px;
+    background: blue;
+    color: white;
+    border: none;
+}
