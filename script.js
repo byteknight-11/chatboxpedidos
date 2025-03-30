@@ -19,7 +19,7 @@ function sendMessage() {
 
     chat.innerHTML += `<p><strong>Tú:</strong> ${input}</p>`;
 
-    fetch("https://chatbot-pedidos.onrender.com", {
+    fetch("https://chatbot-pedidos.onrender.com/chat", { // SE CORRIGE LA URL
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input })
@@ -27,6 +27,10 @@ function sendMessage() {
     .then(response => response.json())
     .then(data => {
         chat.innerHTML += `<p><strong>Asistente virtual:</strong> ${data.response}</p>`;
+    })
+    .catch(error => {
+        chat.innerHTML += `<p><strong>Asistente virtual:</strong> Error en la conexión.</p>`;
+        console.error("Error:", error);
     });
 
     document.getElementById("userInput").value = "";
