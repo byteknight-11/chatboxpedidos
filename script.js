@@ -19,7 +19,7 @@ function sendMessage() {
 
     chat.innerHTML += `<p><strong>Tú:</strong> ${input}</p>`;
 
-    fetch("http://127.0.0.1:5000/chat", {
+    fetch("https://chatbot-pedidos.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input })
