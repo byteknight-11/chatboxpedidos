@@ -10,11 +10,11 @@ document.getElementById("userInput").addEventListener("keypress", function (even
     }
 });
 
-// Función para enviar el mensaje (reutilizable)
+// Función para enviar el mensaje
 function sendMessage() {
     let input = document.getElementById("userInput").value;
     let chat = document.getElementById("chat");
-    
+
     if (input.trim() === "") return; // Evita enviar mensajes vacíos
 
     chat.innerHTML += `<p><strong>Tú:</strong> ${input}</p>`;
@@ -22,7 +22,7 @@ function sendMessage() {
     fetch("https://chatbot-pedidos.onrender.com/chat", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ message: input, user_id: "default_user" }) 
     })
     .then(response => {
         if (!response.ok) {
