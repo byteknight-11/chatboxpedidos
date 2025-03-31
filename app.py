@@ -9,14 +9,14 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Conectar a MongoDB usando variables de entorno (IMPORTANTE para seguridad)
-mongo_uri = os.getenv("MONGO_URI") 
-client = MongoClient(mongo_uri)
+# Conectar a MongoDB usando variables de entorno 
+# Conectar con MongoDB Atlas usando la variable de entorno
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI)
 db = client["chatbot_db"]
 messages_collection = db["messages"]
 orders_collection = db["orders"]
 learned_responses_collection = db["learned_responses"]
-
 # Diccionario para el estado del usuario (espera de ID de pedido)
 user_states = {}
 
