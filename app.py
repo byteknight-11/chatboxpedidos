@@ -13,7 +13,7 @@ CORS(app)
 MONGO_URI = os.getenv("MONGO_URI")
 
 if not MONGO_URI:
-    raise ValueError("❌ ERROR: No se encontró la variable de entorno MONGO_URI.")
+    raise ValueError("❌ ERROR: No se encontró la variable de entorno MONGO_URI. Asegúrate de configurarla en Render o localmente.")
 
 try:
     client = MongoClient(MONGO_URI)
@@ -46,12 +46,12 @@ def home():
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_id = data.get("user_id", "default_user")  # Para manejar múltiples usuarios
+    user_id = data.get("user_id", "default_user")  
     user_message = data.get("message", "").strip().lower()
 
     # Verificar si el usuario está esperando ingresar un ID de pedido
     if user_states.get(user_id) == "waiting_for_order_id":
-        user_states[user_id] = None  # Reiniciar estado después de recibir el ID
+        user_states[user_id] = None  
         return check_order_status(user_message)
 
     # Confirmar si el usuario quiere consultar otro pedido
@@ -63,7 +63,7 @@ def chat():
     if user_message == "no":
         return jsonify({"response": "¡De acuerdo! Si necesitas más ayuda, aquí estaré."})
 
-    # Buscar un número en el mensaje (ej. "pedido 10001" o "cédula 1019135095")
+    # Buscar un número en el mensaje (ej. "pedido 10001")
     match = re.search(r"\d+", user_message)
     if match:
         order_id = match.group()
@@ -74,10 +74,9 @@ def chat():
     if learned_response:
         response = learned_response["answer"]
     else:
-        # Si no hay respuesta en la base, buscar en las respuestas predefinidas
         response = responses.get(user_message, responses["default"])
 
-        # Si tampoco la encuentra, preguntar si el usuario quiere enseñar la respuesta
+        # Si la respuesta es desconocida, preguntar si el usuario quiere enseñarla
         if response == responses["default"]:
             return jsonify({"response": response, "learn": True})
 
@@ -97,10 +96,14 @@ def check_order_status(order_id=None, user_id="default_user"):
     order = orders_collection.find_one({"order_id": order_id})
     
     if order:
-        if order["status"].lower() == "entregado":
+        status = order.get("status", "Estado desconocido").lower()
+        delivery_time = order.get("delivery_time", "Tiempo desconocido")
+
+        if status == "entregado":
             response = f"Tu pedido {order_id} ya fue entregado."
         else:
-            response = f"Tu pedido {order_id} está {order['status']} y llegará en {order['delivery_time']}."
+            response = f"Tu pedido {order_id} está {status} y llegará en {delivery_time}."
+
         response += "\n¿Deseas consultar otro pedido? (Responde 'sí' o 'no')"
     else:
         response = "No encontré información sobre ese pedido. Asegúrate de ingresar un ID válido."
@@ -112,3 +115,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))  
     print(f"🚀 Servidor ejecutándose en el puerto {port}")
     app.run(host="0.0.0.0", port=port)
+
