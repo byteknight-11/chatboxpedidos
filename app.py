@@ -9,14 +9,23 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Conectar a MongoDB usando variables de entorno 
 # Conectar con MongoDB Atlas usando la variable de entorno
 MONGO_URI = os.getenv("MONGO_URI")
-client = MongoClient(MONGO_URI)
-db = client["chatbot_db"]
-messages_collection = db["messages"]
-orders_collection = db["orders"]
-learned_responses_collection = db["learned_responses"]
+
+if not MONGO_URI:
+    raise ValueError("❌ ERROR: No se encontró la variable de entorno MONGO_URI.")
+
+try:
+    client = MongoClient(MONGO_URI)
+    db = client["chatbot_db"]
+    messages_collection = db["messages"]
+    orders_collection = db["orders"]
+    learned_responses_collection = db["learned_responses"]
+    print("✅ Conectado a MongoDB correctamente.")
+except Exception as e:
+    print(f"❌ ERROR al conectar con MongoDB: {e}")
+    exit(1)
+
 # Diccionario para el estado del usuario (espera de ID de pedido)
 user_states = {}
 
@@ -27,6 +36,11 @@ responses = {
     "cómo estás": "Soy un asistente virtual, pero estoy aquí para ayudarte.",
     "default": "Lo siento, no entiendo esa pregunta. ¿Puedes enseñarme la respuesta? Puedes hacerlo con: `aprende [pregunta] = respuesta`"
 }
+
+# Ruta de prueba para ver si el servidor funciona
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "✅ API funcionando. Usa POST en /chat para interactuar."})
 
 # Ruta principal del chatbot
 @app.route("/chat", methods=["POST"])
@@ -96,4 +110,5 @@ def check_order_status(order_id=None, user_id="default_user"):
 # Configurar Flask para Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))  
+    print(f"🚀 Servidor ejecutándose en el puerto {port}")
     app.run(host="0.0.0.0", port=port)
