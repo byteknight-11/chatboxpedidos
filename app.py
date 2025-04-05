@@ -13,7 +13,7 @@ CORS(app)
 MONGO_URI = os.getenv("MONGO_URI")
 
 if not MONGO_URI:
-    raise ValueError("❌ ERROR: No se encontró la variable de entorno MONGO_URI. Asegúrate de configurarla en Render o localmente.")
+    raise ValueError("ERROR: No se encontró la variable de entorno MONGO_URI. Asegúrate de configurarla en Render o localmente.")
 
 try:
     client = MongoClient(MONGO_URI)
@@ -21,9 +21,9 @@ try:
     messages_collection = db["messages"]
     orders_collection = db["orders"]
     learned_responses_collection = db["learned_responses"]
-    print("✅ Conectado a MongoDB correctamente.")
+    print("Conectado a MongoDB correctamente.")
 except Exception as e:
-    print(f"❌ ERROR al conectar con MongoDB: {e}")
+    print(f"ERROR al conectar con MongoDB: {e}")
     exit(1)
 
 # Diccionario para el estado del usuario (espera de ID de pedido)
@@ -40,18 +40,37 @@ responses = {
 # Ruta de prueba para ver si el servidor funciona
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({"message": "✅ API funcionando. Usa POST en /chat para interactuar."})
+    return jsonify({"message": "API funcionando. Usa POST en /chat para interactuar."})
 
 # Ruta principal del chatbot
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_id = data.get("user_id", "default_user")  
+    user_id = data.get("user_id", "default_user")
     user_message = data.get("message", "").strip().lower()
+
+    # Verificar si el usuario quiere enseñar una nueva respuesta
+    if user_message.startswith("aprende "):
+        try:
+            parts = user_message.replace("aprende ", "").split("=", 1)
+            question = parts[0].strip()
+            answer = parts[1].strip()
+
+            if question and answer:
+                learned_responses_collection.update_one(
+                    {"question": question},
+                    {"$set": {"answer": answer}},
+                    upsert=True
+                )
+                return jsonify({"response": f"¡Listo! Ahora sé cómo responder a: '{question}'", "learn": False})
+            else:
+                return jsonify({"response": "Formato incorrecto. Usa: aprende pregunta = respuesta", "learn": False})
+        except Exception:
+            return jsonify({"response": "Hubo un problema al aprender la nueva respuesta. Intenta de nuevo.", "learn": False})
 
     # Verificar si el usuario está esperando ingresar un ID de pedido
     if user_states.get(user_id) == "waiting_for_order_id":
-        user_states[user_id] = None  
+        user_states[user_id] = None
         return check_order_status(user_message)
 
     # Confirmar si el usuario quiere consultar otro pedido
@@ -76,13 +95,12 @@ def chat():
     else:
         response = responses.get(user_message, responses["default"])
 
-        # Si la respuesta es desconocida, preguntar si el usuario quiere enseñarla
         if response == responses["default"]:
             return jsonify({"response": response, "learn": True})
 
     # Guardar conversación en la base de datos
     messages_collection.insert_one({"user": user_message, "Asistente Virtual": response})
-    
+
     return jsonify({"response": response, "learn": False})
 
 # Ruta para consultar el estado de un pedido
@@ -92,9 +110,8 @@ def check_order_status(order_id=None, user_id="default_user"):
         data = request.get_json()
         order_id = data.get("order_id", "").strip()
 
-    # Buscar el pedido en la base de datos
     order = orders_collection.find_one({"order_id": order_id})
-    
+
     if order:
         status = order.get("status", "Estado desconocido").lower()
         delivery_time = order.get("delivery_time", "Tiempo desconocido")
@@ -112,7 +129,8 @@ def check_order_status(order_id=None, user_id="default_user"):
 
 # Configurar Flask para Render
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  
-    print(f"🚀 Servidor ejecutándose en el puerto {port}")
+    port = int(os.environ.get("PORT", 10000))
+    print(f"Servidor ejecutándose en el puerto {port}")
     app.run(host="0.0.0.0", port=port)
+
 
