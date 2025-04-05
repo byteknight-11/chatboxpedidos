@@ -34,7 +34,7 @@ responses = {
     "hola": "¡Hola! Seré tu asistente virtual. Puedes consultar el estado de tu pedido colocando tu número de identificación o identificación del pedido.",
     "adiós": "¡Hasta luego!",
     "cómo estás": "Soy un asistente virtual, pero estoy aquí para ayudarte.",
-    "default": "Lo siento, no entiendo esa pregunta. ¿Puedes enseñarme la respuesta? Puedes hacerlo con: `aprende [pregunta] = respuesta`"
+    "default": "Lo siento, no entiendo esa pregunta. ¿Puedes enseñarme la respuesta? Usa: `aprende pregunta = respuesta`"
 }
 
 # Ruta de prueba para ver si el servidor funciona
@@ -50,23 +50,15 @@ def chat():
     user_message = data.get("message", "").strip().lower()
 
     # Verificar si el usuario quiere enseñar una nueva respuesta
-    if user_message.startswith("aprende "):
-        try:
-            parts = user_message.replace("aprende ", "").split("=", 1)
-            question = parts[0].strip()
-            answer = parts[1].strip()
-
-            if question and answer:
-                learned_responses_collection.update_one(
-                    {"question": question},
-                    {"$set": {"answer": answer}},
-                    upsert=True
-                )
-                return jsonify({"response": f"¡Listo! Ahora sé cómo responder a: '{question}'", "learn": False})
-            else:
-                return jsonify({"response": "Formato incorrecto. Usa: aprende pregunta = respuesta", "learn": False})
-        except Exception:
-            return jsonify({"response": "Hubo un problema al aprender la nueva respuesta. Intenta de nuevo.", "learn": False})
+    match = re.match(r"aprende (.+) = (.+)", user_message)
+    if match:
+        question, answer = match.groups()
+        learned_responses_collection.update_one(
+            {"question": question},
+            {"$set": {"answer": answer}},
+            upsert=True
+        )
+        return jsonify({"response": f"¡Listo! Aprendí que '{question}' significa '{answer}'", "learn": False})
 
     # Verificar si el usuario está esperando ingresar un ID de pedido
     if user_states.get(user_id) == "waiting_for_order_id":
@@ -94,7 +86,6 @@ def chat():
         response = learned_response["answer"]
     else:
         response = responses.get(user_message, responses["default"])
-
         if response == responses["default"]:
             return jsonify({"response": response, "learn": True})
 
