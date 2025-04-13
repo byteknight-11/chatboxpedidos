@@ -5,9 +5,9 @@
 El objetivo del proyecto es simular un sistema de consulta de pedidos de plataformas como Amazon o MercadoLibre, donde el usuario ingresa su ID de pedido o cédula y permite consultar el estado, siendo capaz de responder preguntas generales y si no conoce lo que el usuario escribe debe permitirleaprender nuevas respuestas.
 
 Ejemplo sobre el flujo de la conversación sería:
-	1. El usuario saluda, el chatbot responde y explica su función.
-	2. El usuario ingresa su número de pedido, el chatbot consulta la base de datos y devuelve el estado.
-	3. Si el usuario pregunta algo que el bot no sabe → el chatbot aprende una nueva respuesta si se le enseña.
+1. El usuario saluda, el chatbot responde y explica su función.
+2. El usuario ingresa su número de pedido, el chatbot consulta la base de datos y devuelve el estado.
+3. Si el usuario pregunta algo que el bot no sabe → el chatbot aprende una nueva respuesta si se le enseña.
 
 2. Backend: Creación del Chatbot con Flask y MongoDB
 El backend se desarrolló con Python (Flask) para manejar las solicitudes del usuario y MongoDB para consultar los pedidos y respuestas aprendidas.
@@ -77,5 +77,16 @@ El backend se desarrolló con Python (Flask) para manejar las solicitudes del us
 Para que cualquier persona pueda usar el chatbot:
  - El backend se desplegó en Render.
  - La interfaz web se subió a GitHub Pages.
+
+6. Este proyecto se alinea con la estructura SOA porque:
+
+-El backend está diferenciado del frontend.
+
+-Cada funcionalidad (consultar pedido, responder preguntas generales, aprender nuevas respuestas) está separada en funciones especificas.
+
+-El sistema es modular y escalable, lo que permite agregar nuevos servicios sin afectar los existentes.
+
+-La capacidad del chatbot para aprender nuevas respuestas está agregada como un servicio independiente, que permite guardar preguntas y respuestas enseñadas por el usuario, para que puedan ser usadas en futuras conversaciones.
+
 
 Cualquier usuario puede acceder a la página web y consultar su pedido ingresando su ID de pedido en el chat, la url es https://byteknight-11.github.io/chatboxpedidos/
